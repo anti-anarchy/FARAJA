@@ -1,0 +1,95 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: undp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  queue:
+    build:
+      context: ./queue
+      dockerfile: Dockerfile
+    container_name: undp-queue
+    ports:
+      - "5000:5000"
+    environment:
+      REDIS_HOST: undp-redis
+      REDIS_PORT: "6379"
+      PORT: "5000"
+      CLASSIFIER_URL: http://undp-classifier:6000
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  image-classifier:
+    build:
+      context: ./image-classifier
+      dockerfile: Dockerfile
+    container_name: undp-classifier
+    ports:
+      - "6000:6000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:6000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  reporters-app:
+    build:
+      context: ./reporters-app
+      dockerfile: Dockerfile
+    container_name: undp-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      QUEUE_SERVICE_URL: http://undp-queue:5000
+      CLASSIFIER_URL: http://undp-classifier:6000
+    depends_on:
+      queue:
+        condition: service_healthy
+    restart: unless-stopped
+
+  whatsapp-bot:
+    build:
+      context: ./whatsapp-bot
+      dockerfile: Dockerfile
+    container_name: undp-whatsapp-bot
+    ports:
+      - "3500:3500"
+    volumes:
+      - whatsapp_auth:/app/.wwebjs_auth
+    environment:
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+      PORT: "3500"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3500/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  redis_data:
+  whatsapp_auth:
