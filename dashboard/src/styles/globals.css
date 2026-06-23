@@ -1,0 +1,235 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* ============================================================= *
+ *  FARAJA — Crisis Response Console
+ *  Warm neutral ink-on-paper. Colour means urgency, nothing else.
+ *  No gradients. Handcrafted, calm, human.
+ * ============================================================= */
+
+@font-face {
+	font-family: "DMSans";
+	src: url("/fonts/DMSans-Regular.ttf");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "DMSans";
+	src: url("/fonts/DMSans-Medium.ttf");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "DMSans";
+	src: url("/fonts/DMSans-Bold.ttf");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Exodus";
+	src: url("/fonts/Exodus.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* ---------- Light (default) ---------- */
+:root,
+[data-mantine-color-scheme="light"] {
+	--canvas: #f4f3ef;
+	--surface: #ffffff;
+	--surface-2: #faf9f6;
+	--sunken: #efece5;
+	--hover: #f5f3ee;
+	--border: #e6e3da;
+	--border-strong: #d6d2c6;
+
+	--ink: #1c1b18;
+	--ink-2: #5c594f;
+	--ink-3: #8d897d;
+	--ink-4: #b4b0a3;
+
+	/* Single signature accent — a calm deep teal */
+	--accent: #15706b;
+	--accent-2: #0e5d59;
+	--accent-soft: #e2efee;
+	--accent-ink: #0b4b47;
+
+	--sev-critical: #c5453b;
+	--sev-medium: #b5781f;
+	--sev-low: #5d7833;
+	--sev-critical-soft: #f7e7e4;
+	--sev-medium-soft: #f6ecd8;
+	--sev-low-soft: #ebf0e0;
+
+	--shadow-xs: 0 1px 2px rgba(28, 27, 24, 0.05);
+	--shadow-sm: 0 1px 2px rgba(28, 27, 24, 0.06), 0 2px 8px -3px rgba(28, 27, 24, 0.08);
+	--shadow-md: 0 8px 26px -10px rgba(28, 27, 24, 0.2);
+	--shadow-lg: 0 22px 56px -16px rgba(28, 27, 24, 0.3);
+
+	--ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Dark ---------- */
+[data-mantine-color-scheme="dark"] {
+	--canvas: #16171a;
+	--surface: #1f2024;
+	--surface-2: #25262b;
+	--sunken: #2a2b31;
+	--hover: #282930;
+	--border: #34353c;
+	--border-strong: #43444c;
+
+	--ink: #f1f0eb;
+	--ink-2: #aeaca3;
+	--ink-3: #828079;
+	--ink-4: #5d5c56;
+
+	--accent: #36a89d;
+	--accent-2: #2c8e85;
+	--accent-soft: #16403d;
+	--accent-ink: #8fd8d0;
+
+	--sev-critical: #df6258;
+	--sev-medium: #d39b44;
+	--sev-low: #8eb158;
+	--sev-critical-soft: #38211e;
+	--sev-medium-soft: #352a16;
+	--sev-low-soft: #25301a;
+
+	--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px -3px rgba(0, 0, 0, 0.5);
+	--shadow-md: 0 8px 26px -10px rgba(0, 0, 0, 0.6);
+	--shadow-lg: 0 22px 56px -16px rgba(0, 0, 0, 0.7);
+}
+
+* {
+	-webkit-font-smoothing: antialiased;
+}
+
+body {
+	font-family: "DMSans", system-ui, sans-serif;
+	font-weight: 400;
+	color: var(--ink);
+	background-color: var(--canvas);
+	transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+/* ---------- Atoms ---------- */
+.tnum,
+.metric-value {
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.01em;
+}
+
+.section-label {
+	font-size: 10.5px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ink-3);
+}
+
+.metric-value {
+	font-weight: 700;
+	color: var(--ink);
+	line-height: 1;
+}
+
+.icon-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 9px;
+	background: var(--sunken);
+	color: var(--ink-2);
+	flex-shrink: 0;
+}
+
+/* Native range sliders adopt the brand accent + a themed track */
+input[type="range"] {
+	accent-color: var(--accent);
+	cursor: pointer;
+	height: 6px;
+}
+
+.hoverable {
+	transition: background 0.16s var(--ease), border-color 0.16s var(--ease),
+		transform 0.16s var(--ease);
+}
+.hoverable:hover {
+	background: var(--hover);
+	border-color: var(--border-strong);
+}
+
+.rail-critical { box-shadow: inset 3px 0 0 0 var(--sev-critical); }
+.rail-medium { box-shadow: inset 3px 0 0 0 var(--sev-medium); }
+.rail-low { box-shadow: inset 3px 0 0 0 var(--sev-low); }
+
+/* ---------- Motion (subtle) ---------- */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes dotFlash {
+	0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+	30% { opacity: 1; transform: translateY(-2px); }
+}
+
+.anim-fade { animation: fadeIn 0.28s var(--ease) both; }
+.anim-rise { animation: slideUp 0.3s var(--ease) both; }
+
+.stagger > * { animation: slideUp 0.3s var(--ease) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger > *:nth-child(3) { animation-delay: 0.08s; }
+.stagger > *:nth-child(4) { animation-delay: 0.11s; }
+.stagger > *:nth-child(5) { animation-delay: 0.14s; }
+.stagger > *:nth-child(6) { animation-delay: 0.17s; }
+.stagger > *:nth-child(7) { animation-delay: 0.2s; }
+.stagger > *:nth-child(8) { animation-delay: 0.23s; }
+
+@media (prefers-reduced-motion: reduce) {
+	*, .stagger > * { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Scrollbars ---------- */
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+	background: var(--border-strong);
+	border-radius: 99px;
+	border: 3px solid transparent;
+	background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--ink-4); background-clip: content-box; }
+
+/* ---------- Leaflet ---------- */
+.leaflet-container {
+	width: 100%;
+	height: 100%;
+	font-family: "DMSans", sans-serif;
+	background: var(--sunken);
+}
+.leaflet-popup-content-wrapper {
+	border-radius: 12px;
+	box-shadow: var(--shadow-lg);
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--ink);
+	padding: 2px;
+}
+.leaflet-popup-content-wrapper .mantine-Text-root { color: var(--ink); }
+.leaflet-popup-tip { background: var(--surface); box-shadow: var(--shadow-sm); }
+.leaflet-control-zoom a {
+	border-radius: 8px !important;
+	color: var(--ink-2) !important;
+	background: var(--surface) !important;
+	border-color: var(--border) !important;
+}
+.leaflet-bar { border: none !important; box-shadow: var(--shadow-sm); border-radius: 9px; overflow: hidden; }
+/* Make room for the basemap switcher stacked above the zoom control */
+.leaflet-top.leaflet-left .leaflet-control-zoom { margin-top: 50px; }
+
+.crisis-pin { animation: fadeIn 0.25s var(--ease) both; }
