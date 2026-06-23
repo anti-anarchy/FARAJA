@@ -91,10 +91,13 @@ export async function fetchAllPages<T>(baseUrl: string): Promise<T[]> {
 // ─── Mapping helpers ──────────────────────────────────────────────────────────
 
 export function mapDisasterType(aiType: string | null, crisis: string | null): DisasterType {
-  const raw = (aiType ?? crisis ?? "").toLowerCase().replace(/_/g, " ");
+  const raw = (crisis ?? aiType ?? "").toLowerCase().replace(/_/g, " ");
   switch (raw) {
+    case "chemical":
+    case "chemical incident":             return "Chemical";
     case "flood":                         return "Flood";
-    case "fire": case "wildfire":         return "Fire";
+    case "fire":
+    case "wildfire":                      return "Fire";
     case "earthquake":                    return "Earthquake";
     case "hurricane":                     return "Hurricane";
     case "cyclone":                       return "Cyclone";

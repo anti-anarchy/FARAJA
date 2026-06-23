@@ -14,8 +14,8 @@ import { DAMAGE_COLORS } from "@/types";
 import { DISASTER_ICON, DisasterGlyph } from "@/components/icons";
 
 const LEGEND_DISASTERS: DisasterType[] = [
-	"Flood", "Fire", "Landslide", "Earthquake",
-	"Hurricane", "Cyclone", "Tsunami", "Civil Unrest", "Conflict",
+	"Flood", "Fire", "Chemical", "Landslide", "Earthquake",
+	"Hurricane", "Cyclone", "Tsunami", "Civil Unrest", "Conflict", "Other",
 ];
 
 interface Basemap {
@@ -352,24 +352,40 @@ function PhotoInPopup({
 	if (!state) return null;
 	return (
 		<div style={{ marginTop: 2 }}>
-			<img
-				src={state}
-				alt={name}
-				onError={(e) => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
+			<button
+				type="button"
+				aria-label={`Expand photo for ${name}`}
+				onClick={(e) => {
+					e.stopPropagation();
+					L.DomEvent.stopPropagation(e.nativeEvent);
+					onExpand(state);
+				}}
 				style={{
 					width: "100%",
-					height: 130,
-					objectFit: "cover",
-					borderRadius: 6,
+					padding: 0,
+					border: "1px solid var(--border)",
+					background: "transparent",
+					borderRadius: 7,
 					cursor: "zoom-in",
 					display: "block",
-					border: "1px solid var(--border)",
+					overflow: "hidden",
 				}}
-				onClick={() => onExpand(state)}
-			/>
-			<div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 3, textAlign: "right" }}>
-				Click to expand ↗
-			</div>
+			>
+				<img
+					src={state}
+					alt={name}
+					onError={(e) => { (e.currentTarget as HTMLImageElement).closest("button")!.style.display = "none"; }}
+					style={{
+						width: "100%",
+						height: 130,
+						objectFit: "cover",
+						display: "block",
+					}}
+				/>
+				<div style={{ fontSize: 10, color: "var(--ink-3)", padding: "3px 6px 4px", textAlign: "right" }}>
+					Click to expand ↗
+				</div>
+			</button>
 		</div>
 	);
 }

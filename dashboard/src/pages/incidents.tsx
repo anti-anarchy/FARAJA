@@ -58,7 +58,19 @@ const STATUS_STYLES: Record<TaskStatus, { label: string; bg: string; color: stri
 };
 
 const severityOptions: DamageLevel[] = ["Critical", "Medium", "Low"];
-const disasterOptions: DisasterType[] = ["Earthquake", "Fire", "Flood", "Hurricane", "Landslide", "Other"];
+const disasterOptions: DisasterType[] = [
+	"Chemical",
+	"Earthquake",
+	"Fire",
+	"Flood",
+	"Hurricane",
+	"Cyclone",
+	"Landslide",
+	"Tsunami",
+	"Civil Unrest",
+	"Conflict",
+	"Other",
+];
 const statusOptions: TaskStatus[] = ["assigned", "unassigned", "resolved"];
 const casualtyOptions: { value: CasualtyFilter; label: string }[] = [
 	{ value: "none", label: "No casualties" },
@@ -264,8 +276,8 @@ export default function IncidentsPage() {
 								clearable
 							/>
 							<Select
-								label="Disaster Type"
-								placeholder="All disaster types"
+								label="Crisis type"
+								placeholder="All crisis types"
 								value={disasterType}
 								onChange={(value) => setDisasterType(value as DisasterType | null)}
 								data={disasterOptions}
@@ -308,7 +320,7 @@ export default function IncidentsPage() {
 									<Table.Th>Location</Table.Th>
 									<Table.Th>Infrastructure</Table.Th>
 									<Table.Th>County</Table.Th>
-									<Table.Th>Disaster Type</Table.Th>
+									<Table.Th>Crisis type</Table.Th>
 									<Table.Th>Severity</Table.Th>
 									<Table.Th>Casualties</Table.Th>
 									<Table.Th>Assigned To</Table.Th>

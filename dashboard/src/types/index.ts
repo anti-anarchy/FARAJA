@@ -1,4 +1,5 @@
 export type DisasterType =
+  | "Chemical"
   | "Earthquake"
   | "Fire"
   | "Flood"
@@ -28,6 +29,7 @@ export type TaskStatus = "assigned" | "unassigned" | "resolved";
 export type ResponderAvailability = "available" | "busy" | "full" | "offline";
 
 export const DISASTER_COLORS: Record<DisasterType, string> = {
+  Chemical: "#6F7D2C",
   Earthquake: "#FF6B35",
   Fire: "#E74C3C",
   Flood: "#3498DB",

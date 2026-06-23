@@ -276,7 +276,7 @@ function ClusterStats({ zone, onAssign }: { zone: ZoneFeature; onAssign: () => v
 
                 {Object.keys(zone.properties.disaster_breakdown ?? {}).length > 0 && (
                     <div>
-                        <Text size="xs" c="dimmed" mb={8}>Disaster breakdown</Text>
+                        <Text size="xs" c="dimmed" mb={8}>Crisis breakdown</Text>
                         <DisasterBreakdown breakdown={zone.properties.disaster_breakdown ?? {}} total={total} />
                     </div>
                 )}

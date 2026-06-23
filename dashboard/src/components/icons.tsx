@@ -1,5 +1,6 @@
 import {
 	IconActivity,
+	IconBiohazard,
 	IconFlame,
 	IconRipple,
 	IconTornado,
@@ -15,6 +16,7 @@ import type { DisasterType } from "@/types";
 
 /** Each crisis is identified by a real glyph, never by colour alone. */
 export const DISASTER_ICON: Record<DisasterType, React.ComponentType<IconProps>> = {
+	Chemical: IconBiohazard,
 	Earthquake: IconActivity,
 	Fire: IconFlame,
 	Flood: IconRipple,
