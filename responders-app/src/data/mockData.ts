@@ -27,6 +27,7 @@ export const mockReports: CrisisReport[] = [
 		address: "Ngong Road, near Karen roundabout, Nairobi",
 		reportedAt: "2026-06-17T06:30:00",
 		urgency: "critical",
+		disasterType: "Landslide",
 		status: "assigned",
 		survey: {
 			infrastructureTypes: ["Road", "Bridge"],
@@ -49,6 +50,7 @@ export const mockReports: CrisisReport[] = [
 		address: "Westlands Commercial Avenue, Nairobi",
 		reportedAt: "2026-06-17T07:15:00",
 		urgency: "high",
+		disasterType: "Other",
 		status: "assigned",
 		survey: {
 			infrastructureTypes: ["Building", "Electrical"],
@@ -70,6 +72,7 @@ export const mockReports: CrisisReport[] = [
 		address: "Olympic Estate Road, Kibera, Nairobi",
 		reportedAt: "2026-06-17T05:45:00",
 		urgency: "high",
+		disasterType: "Flood",
 		status: "assigned",
 		survey: {
 			infrastructureTypes: ["Road", "Sewage", "Housing"],
@@ -92,6 +95,7 @@ export const mockReports: CrisisReport[] = [
 		address: "Langata Road, near Wilson Airport, Nairobi",
 		reportedAt: "2026-06-17T08:00:00",
 		urgency: "medium",
+		disasterType: "Other",
 		status: "attended",
 		attendedAt: "2026-06-17T09:10:00",
 		notes: "KPLC notified, area cordoned off. Repair crew ETA 2 hours.",

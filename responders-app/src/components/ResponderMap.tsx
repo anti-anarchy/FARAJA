@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
 	MapContainer,
 	TileLayer,
@@ -10,21 +11,123 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { CrisisReport } from "@/types";
+import { Popover, Text, Group, Stack } from "@mantine/core";
+import { IconStack2, IconChevronDown } from "@tabler/icons-react";
+import { CrisisReport, DisasterType, DISASTER_COLORS } from "@/types";
+import { DISASTER_ICON, DisasterGlyph } from "@/components/icons";
 import { NavigationTarget } from "@/utils/routing";
 
 const { BaseLayer } = LayersControl;
 
-// ── Urgency colours ───────────────────────────────────────────────────────────
-const URGENCY_HEX: Record<string, string> = {
-	critical: "#ef4444",
-	high: "#f97316",
-	medium: "#eab308",
-	low: "#22c55e"
-};
+const LEGEND_DISASTERS = Object.keys(DISASTER_COLORS) as DisasterType[];
 
-function makeReportIcon(urgency: string, attended: boolean) {
-	const color = attended ? "#9ca3af" : (URGENCY_HEX[urgency] ?? "#6b7280");
+function disasterSvg(type: DisasterType, size: number, color: string): string {
+	const Comp = DISASTER_ICON[type] ?? DISASTER_ICON.Other;
+	return renderToStaticMarkup(<Comp size={size} color={color} stroke={2.2} />);
+}
+
+function DisasterLegend() {
+	return (
+		<div style={{ position: "absolute", bottom: 12, left: 12, zIndex: 1000 }}>
+			<Popover position="top-start" radius="md" shadow="md" offset={6} withArrow>
+				<Popover.Target>
+					<button
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: 6,
+							height: 32,
+							padding: "0 12px",
+							borderRadius: 9,
+							border: "1px solid var(--cc-border)",
+							background: "var(--cc-panel)",
+							color: "var(--cc-text)",
+							cursor: "pointer",
+							fontSize: 12,
+							fontWeight: 600,
+							fontFamily: "'Public Sans', sans-serif",
+							boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
+						}}>
+						<IconStack2 size={14} color="var(--cc-text-muted)" />
+						Legend
+						<IconChevronDown size={12} color="var(--cc-text-muted)" />
+					</button>
+				</Popover.Target>
+				<Popover.Dropdown
+					p={10}
+					style={{
+						minWidth: 220,
+						background: "var(--cc-panel)",
+						border: "1px solid var(--cc-border)"
+					}}>
+					<Text
+						size="xs"
+						fw={700}
+						tt="uppercase"
+						mb={6}
+						px={2}
+						style={{ color: "var(--cc-text-muted)", letterSpacing: 0.4 }}>
+						Disaster type
+					</Text>
+					<div
+						style={{
+							display: "grid",
+							gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+							gap: 4
+						}}>
+						{LEGEND_DISASTERS.map(type => (
+							<Group key={type} gap={8} wrap="nowrap" px={6} py={4}>
+								<span
+									style={{
+										width: 20,
+										height: 20,
+										borderRadius: "50%",
+										background: DISASTER_COLORS[type],
+										flexShrink: 0,
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center"
+									}}>
+									<DisasterGlyph type={type} size={11} color="#ffffff" stroke={2.3} />
+								</span>
+								<Text size="xs" style={{ color: "var(--cc-text)" }}>{type}</Text>
+							</Group>
+						))}
+					</div>
+
+					<Text
+						size="xs"
+						fw={700}
+						tt="uppercase"
+						mt={12}
+						mb={6}
+						px={2}
+						style={{ color: "var(--cc-text-muted)", letterSpacing: 0.4 }}>
+						Status
+					</Text>
+					<Stack gap={2} px={6}>
+						<Group gap={8} wrap="nowrap" py={4}>
+							<span
+								style={{
+									width: 11,
+									height: 11,
+									borderRadius: "50%",
+									background: "var(--cc-text-muted)",
+									flexShrink: 0
+								}}
+							/>
+							<Text size="xs" style={{ color: "var(--cc-text)" }}>Attended</Text>
+						</Group>
+					</Stack>
+				</Popover.Dropdown>
+			</Popover>
+		</div>
+	);
+}
+
+function makeReportIcon(disasterType: DisasterType, attended: boolean) {
+	const color = attended ? "#837c6f" : (DISASTER_COLORS[disasterType] ?? "#837c6f");
+	const glyph = disasterSvg(disasterType, 10, color);
 	return L.divIcon({
 		className: "",
 		html: `
@@ -38,8 +141,9 @@ function makeReportIcon(urgency: string, attended: boolean) {
         <div style="
           position:absolute;top:6px;left:6px;
           width:16px;height:16px;border-radius:50%;
-          background:white;opacity:0.9;
-        "></div>
+          background:white;opacity:0.95;
+          display:flex;align-items:center;justify-content:center;
+        ">${glyph}</div>
       </div>`,
 		iconSize: [32, 40],
 		iconAnchor: [16, 40]
@@ -141,13 +245,13 @@ function RouteLayer({ route, userPos }: RouteLayerProps) {
 			{traversed.length >= 2 && (
 				<Polyline
 					positions={traversed}
-					pathOptions={{ color: "#1a1a1a", weight: 5, opacity: 0.2 }}
+					pathOptions={{ color: "#fece09", weight: 5, opacity: 0.25 }}
 				/>
 			)}
 			{remaining.length >= 2 && (
 				<Polyline
 					positions={remaining}
-					pathOptions={{ color: "#1a1a1a", weight: 5, opacity: 0.85 }}
+					pathOptions={{ color: "#fece09", weight: 5, opacity: 0.9 }}
 				/>
 			)}
 		</>
@@ -185,46 +289,49 @@ export default function ResponderMap({
 	);
 
 	return (
-		<MapContainer
-			center={[-1.2921, 36.8219]}
-			zoom={12}
-			style={{ height: "100%", width: "100%", zIndex: 10 }}>
-			<LayersControl position="topright">
-				<BaseLayer name="Streets" checked>
-					<TileLayer
-						url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-						attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-					/>
-				</BaseLayer>
-				<BaseLayer name="Satellite">
-					<TileLayer
-						url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-						attribution="Tiles &copy; Esri"
-					/>
-				</BaseLayer>
-				<BaseLayer name="Dark">
-					<TileLayer
-						url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-						attribution='&copy; OpenStreetMap &copy; CARTO'
-					/>
-				</BaseLayer>
-			</LayersControl>
+		<div style={{ position: "relative", width: "100%", height: "100%" }}>
+			<DisasterLegend />
+			<MapContainer
+				center={[-1.2921, 36.8219]}
+				zoom={12}
+				style={{ height: "100%", width: "100%", zIndex: 10 }}>
+				<LayersControl position="topright">
+					<BaseLayer name="Dark" checked>
+						<TileLayer
+							url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+							attribution='&copy; OpenStreetMap &copy; CARTO'
+						/>
+					</BaseLayer>
+					<BaseLayer name="Streets">
+						<TileLayer
+							url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+							attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+						/>
+					</BaseLayer>
+					<BaseLayer name="Satellite">
+						<TileLayer
+							url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+							attribution="Tiles &copy; Esri"
+						/>
+					</BaseLayer>
+				</LayersControl>
 
-			<UserLocation onPosition={handlePosition} />
-			<MapEventListener />
+				<UserLocation onPosition={handlePosition} />
+				<MapEventListener />
 
-			{reports.map(report => (
-				<Marker
-					key={report.id}
-					position={[report.location.lat, report.location.lng]}
-					icon={makeReportIcon(report.urgency, report.status === "attended")}
-					eventHandlers={{ click: () => onReportClick(report) }}
-				/>
-			))}
+				{reports.map(report => (
+					<Marker
+						key={report.id}
+						position={[report.location.lat, report.location.lng]}
+						icon={makeReportIcon(report.disasterType, report.status === "attended")}
+						eventHandlers={{ click: () => onReportClick(report) }}
+					/>
+				))}
 
-			{navigationTarget && (
-				<RouteLayer route={navigationTarget.route} userPos={userPos} />
-			)}
-		</MapContainer>
+				{navigationTarget && (
+					<RouteLayer route={navigationTarget.route} userPos={userPos} />
+				)}
+			</MapContainer>
+		</div>
 	);
 }

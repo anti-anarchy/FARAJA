@@ -1,24 +1,29 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
-import {
-	Text,
-	Badge,
-	Stack,
-	Group,
-	ScrollArea,
-	Loader,
-	SegmentedControl
-} from "@mantine/core";
-import {
-	IconMapPin,
-	IconClock,
-	IconChevronRight,
-	IconCircleCheck
-} from "@tabler/icons-react";
+import dynamic from "next/dynamic";
+import { Text, Badge, Loader, ScrollArea, Stack, Group } from "@mantine/core";
+import { IconMapPin } from "@tabler/icons-react";
 import { useAuth } from "@/context/AuthContext";
 import { CrisisReport } from "@/types";
+import { buildMultiStopRoute } from "@/utils/routing";
 import ReportDetailDrawer from "@/components/ReportDetailDrawer";
 import TopNav from "@/components/TopNav";
+
+const ResponderMap = dynamic(() => import("@/components/ResponderMap"), {
+	ssr: false,
+	loading: () => (
+		<div
+			style={{
+				height: "100%",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				background: "var(--cc-panel)"
+			}}>
+			<Loader color="gold" size="sm" />
+		</div>
+	)
+});
 
 const URGENCY_COLORS: Record<string, string> = {
 	critical: "red",
@@ -27,22 +32,15 @@ const URGENCY_COLORS: Record<string, string> = {
 	low: "green"
 };
 
-function formatRelative(iso: string) {
-	const diff = Date.now() - new Date(iso).getTime();
-	const h = Math.floor(diff / 3600000);
-	const m = Math.floor((diff % 3600000) / 60000);
-	if (h > 0) return `${h}h ${m}m ago`;
-	return `${m}m ago`;
-}
-
-export default function ReportsPage() {
+export default function RoutePage() {
 	const { responder, isLoading } = useAuth();
 	const router = useRouter();
 	const [reports, setReports] = useState<CrisisReport[]>([]);
-	const [filter, setFilter] = useState<"all" | "assigned" | "attended">("all");
-	const [selectedReport, setSelectedReport] = useState<CrisisReport | null>(
-		null
-	);
+	const [selectedReport, setSelectedReport] = useState<CrisisReport | null>(null);
+	const [userPos, setUserPos] = useState<[number, number] | null>(null);
+	const [orderedStops, setOrderedStops] = useState<CrisisReport[]>([]);
+	const [route, setRoute] = useState<[number, number][]>([]);
+	const [computing, setComputing] = useState(false);
 
 	useEffect(() => {
 		if (!isLoading && !responder) router.replace("/login");
@@ -55,6 +53,30 @@ export default function ReportsPage() {
 			.then(setReports)
 			.catch(err => console.error("Failed to load reports:", err));
 	}, [responder]);
+
+	useEffect(() => {
+		const assigned = reports.filter(r => r.status === "assigned");
+		if (!userPos || assigned.length === 0) {
+			setOrderedStops([]);
+			setRoute([]);
+			return;
+		}
+		let cancelled = false;
+		setComputing(true);
+		buildMultiStopRoute(userPos, assigned)
+			.then(({ order, route }) => {
+				if (cancelled) return;
+				setOrderedStops(order);
+				setRoute(route);
+			})
+			.catch(err => console.error("Failed to build route:", err))
+			.finally(() => {
+				if (!cancelled) setComputing(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [userPos, reports]);
 
 	const handleNavigate = useCallback((_report: CrisisReport) => {
 		router.push("/map");
@@ -98,61 +120,62 @@ export default function ReportsPage() {
 		);
 	}
 
-	const visible =
-		filter === "all" ? reports : reports.filter(r => r.status === filter);
-
 	return (
-		<div
-			style={{
-				height: "100dvh",
-				display: "flex",
-				flexDirection: "column",
-				background: "var(--cc-bg)",
-				paddingTop: 64
-			}}>
+		<div style={{ height: "100dvh", display: "flex", flexDirection: "column", paddingTop: 64 }}>
 			<TopNav />
 
 			{/* Header */}
 			<div
 				style={{
-					padding: "16px 16px 12px",
-					borderBottom: "1px solid var(--cc-border)",
+					height: 52,
 					background: "var(--cc-bg)",
-					flexShrink: 0
+					borderBottom: "1px solid var(--cc-border)",
+					display: "flex",
+					alignItems: "center",
+					padding: "0 16px",
+					gap: 8,
+					flexShrink: 0,
+					zIndex: 20
 				}}>
-				<Text fw={700} size="lg" mb={12} style={{ fontFamily: "'Big Shoulders Display', sans-serif" }}>
-					Assigned Reports
+				<Text fw={700} size="sm" style={{ flex: 1, fontFamily: "'Big Shoulders Display', sans-serif" }}>
+					Optimized Route
 				</Text>
-				<SegmentedControl
-					fullWidth
-					size="xs"
-					radius="xl"
-					color="gold"
-					value={filter}
-					onChange={v => setFilter(v as typeof filter)}
-					data={[
-						{ label: "All", value: "all" },
-						{ label: "Active", value: "assigned" },
-						{ label: "Attended", value: "attended" }
-					]}
-					styles={{
-						root: { background: "var(--cc-panel)" }
-					}}
+				{computing ? (
+					<Loader color="gold" size="xs" />
+				) : (
+					<Badge color="gold" variant="filled" size="sm">
+						{orderedStops.length} stop{orderedStops.length === 1 ? "" : "s"}
+					</Badge>
+				)}
+			</div>
+
+			{/* Map */}
+			<div style={{ height: "45%", overflow: "hidden", position: "relative", flexShrink: 0 }}>
+				<ResponderMap
+					reports={orderedStops}
+					onReportClick={setSelectedReport}
+					navigationTarget={route.length > 0 ? { report: orderedStops[0], route } : null}
+					onUserPosition={setUserPos}
 				/>
 			</div>
 
-			{/* List */}
+			{/* Ordered stop list */}
 			<ScrollArea style={{ flex: 1 }}>
 				<Stack gap={0} px={16} pt={12} pb={24}>
-					{visible.length === 0 && (
+					{!userPos && (
 						<Text size="sm" c="dimmed" ta="center" py={40}>
-							No reports in this category
+							Waiting for your location…
 						</Text>
 					)}
-					{visible.map(report => (
+					{userPos && orderedStops.length === 0 && (
+						<Text size="sm" c="dimmed" ta="center" py={40}>
+							No active reports to route
+						</Text>
+					)}
+					{orderedStops.map((stop, i) => (
 						<button
-							key={report.id}
-							onClick={() => setSelectedReport(report)}
+							key={stop.id}
+							onClick={() => setSelectedReport(stop)}
 							style={{
 								width: "100%",
 								background: "var(--cc-panel)",
@@ -166,25 +189,23 @@ export default function ReportsPage() {
 								alignItems: "flex-start",
 								gap: 12
 							}}>
-							{/* Urgency dot */}
 							<div
 								style={{
-									width: 10,
-									height: 10,
+									width: 22,
+									height: 22,
 									borderRadius: "50%",
-									background:
-										report.status === "attended"
-											? "var(--cc-text-muted)"
-											: ({
-													critical: "#ef4444",
-													high: "#f97316",
-													medium: "#eab308",
-													low: "#22c55e"
-												}[report.urgency] ?? "#9ca3af"),
-									marginTop: 4,
-									flexShrink: 0
-								}}
-							/>
+									background: "var(--cc-accent)",
+									color: "#151515",
+									fontSize: 11,
+									fontWeight: 700,
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									flexShrink: 0,
+									marginTop: 1
+								}}>
+								{i + 1}
+							</div>
 
 							<div style={{ flex: 1, minWidth: 0 }}>
 								<Group justify="space-between" mb={4} wrap="nowrap">
@@ -197,22 +218,13 @@ export default function ReportsPage() {
 											whiteSpace: "nowrap",
 											flex: 1
 										}}>
-										{report.title}
+										{stop.title}
 									</Text>
-									<Group gap={4} style={{ flexShrink: 0 }}>
-										<Badge
-											color={URGENCY_COLORS[report.urgency]}
-											variant="light"
-											size="xs">
-											{report.urgency}
-										</Badge>
-										{report.status === "attended" && (
-											<IconCircleCheck size={14} color="#22c55e" />
-										)}
-									</Group>
+									<Badge color={URGENCY_COLORS[stop.urgency]} variant="light" size="xs">
+										{stop.urgency}
+									</Badge>
 								</Group>
-
-								<Group gap={4} mb={2}>
+								<Group gap={4}>
 									<IconMapPin size={12} color="var(--cc-text-muted)" />
 									<Text
 										size="xs"
@@ -222,19 +234,10 @@ export default function ReportsPage() {
 											textOverflow: "ellipsis",
 											whiteSpace: "nowrap"
 										}}>
-										{report.address}
-									</Text>
-								</Group>
-
-								<Group gap={4}>
-									<IconClock size={12} color="var(--cc-text-muted)" />
-									<Text size="xs" c="dimmed">
-										{formatRelative(report.reportedAt)}
+										{stop.address}
 									</Text>
 								</Group>
 							</div>
-
-							<IconChevronRight size={16} color="var(--cc-text-muted)" style={{ marginTop: 2, flexShrink: 0 }} />
 						</button>
 					))}
 				</Stack>

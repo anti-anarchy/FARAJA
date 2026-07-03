@@ -70,6 +70,17 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  responders-app:
+    build:
+      context: ./responders-app
+      dockerfile: Dockerfile
+    container_name: undp-responders
+    ports:
+      - "3100:3000"
+    environment:
+      RAPIDA_API_BASE: ${RAPIDA_API_BASE:-}
+    restart: unless-stopped
+
   whatsapp-bot:
     build:
       context: ./whatsapp-bot

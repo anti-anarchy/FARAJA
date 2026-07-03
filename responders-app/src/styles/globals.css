@@ -1,28 +1,22 @@
+@import url("https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-@font-face {
-	font-family: "DMSans";
-	src: url("/DMSans-Regular.ttf");
-	font-weight: 400;
-	font-style: normal;
-}
-
-@font-face {
-	font-family: "DMSans";
-	src: url("/DMSans-Bold.ttf");
-	font-weight: 700;
-	font-style: normal;
-}
-
-@font-face {
-	font-family: "DMSans";
-	src: url("/DMSans-Medium.ttf");
-	font-weight: 500;
-	font-style: normal;
+:root {
+	/* CrisisCleanup-inspired dark theme */
+	--cc-bg: #151515;
+	--cc-panel: #1f1c18;
+	--cc-hover: #262320;
+	--cc-border: #35312b;
+	--cc-text: #f5f3ef;
+	--cc-text-dim: #b8b3a8;
+	--cc-text-muted: #837c6f;
+	--cc-accent: #fece09;
+	--cc-accent-2: #f79820;
 }
 
 body {
-	font-family: "DMSans", sans-serif;
+	font-family: "Public Sans", sans-serif;
 	font-weight: normal;
-	background-color: #f0eee6;
+	background-color: var(--cc-bg);
+	color: var(--cc-text);
 }

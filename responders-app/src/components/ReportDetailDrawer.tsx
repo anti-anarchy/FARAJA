@@ -78,7 +78,7 @@ export default function ReportDetailDrawer({
 				styles={{
 					content: {
 						borderRadius: "16px 16px 0 0",
-						background: "#f0eee6"
+						background: "var(--cc-panel)"
 					},
 					body: { padding: 0, height: "100%" }
 				}}>
@@ -86,7 +86,7 @@ export default function ReportDetailDrawer({
 				<div
 					style={{
 						padding: "16px 16px 0",
-						background: "#f0eee6",
+						background: "var(--cc-panel)",
 						position: "sticky",
 						top: 0,
 						zIndex: 10
@@ -108,7 +108,7 @@ export default function ReportDetailDrawer({
 						</Group>
 						<ActionIcon
 							variant="subtle"
-							color="dark"
+							color="gold"
 							onClick={onClose}
 							size="sm">
 							<IconX size={16} />
@@ -120,23 +120,23 @@ export default function ReportDetailDrawer({
 					</Text>
 
 					<Group gap={6} mb={4}>
-						<IconMapPin size={14} color="#6b7280" />
+						<IconMapPin size={14} color="var(--cc-text-muted)" />
 						<Text size="xs" c="dimmed" style={{ flex: 1 }}>
 							{report.address}
 						</Text>
 					</Group>
 					<Group gap={6} mb={12}>
-						<IconClock size={14} color="#6b7280" />
+						<IconClock size={14} color="var(--cc-text-muted)" />
 						<Text size="xs" c="dimmed">
 							Reported {formatTime(report.reportedAt)}
 						</Text>
 					</Group>
 
-					<Divider color="#e5e3db" />
+					<Divider color="var(--cc-border)" />
 				</div>
 
 				<ScrollArea style={{ height: "calc(100% - 220px)" }} px={16} py={12}>
-					<Tabs defaultValue="overview" color="dark">
+					<Tabs defaultValue="overview" color="gold">
 						<Tabs.List grow mb={12}>
 							<Tabs.Tab value="overview">Overview</Tabs.Tab>
 							<Tabs.Tab value="survey">Survey</Tabs.Tab>
@@ -149,7 +149,7 @@ export default function ReportDetailDrawer({
 						<Tabs.Panel value="overview">
 							<Stack gap={12}>
 								<Group gap={8}>
-									<IconUser size={16} color="#6b7280" />
+									<IconUser size={16} color="var(--cc-text-muted)" />
 									<Text size="sm">
 										<Text span fw={500}>
 											Reporter:
@@ -159,7 +159,7 @@ export default function ReportDetailDrawer({
 								</Group>
 
 								<Group gap={8}>
-									<IconAlertTriangle size={16} color="#6b7280" />
+									<IconAlertTriangle size={16} color="var(--cc-text-muted)" />
 									<Text size="sm">
 										<Text span fw={500}>
 											Damage:
@@ -169,7 +169,7 @@ export default function ReportDetailDrawer({
 								</Group>
 
 								<Group gap={8}>
-									<IconUser size={16} color="#6b7280" />
+									<IconUser size={16} color="var(--cc-text-muted)" />
 									<Text size="sm">
 										<Text span fw={500}>
 											People affected:
@@ -184,7 +184,7 @@ export default function ReportDetailDrawer({
 									</Text>
 									<Group gap={6}>
 										{report.survey.infrastructureTypes.map(t => (
-											<Badge key={t} color="dark" variant="light" size="sm">
+											<Badge key={t} color="gold" variant="light" size="sm">
 												{t}
 											</Badge>
 										))}
@@ -194,7 +194,7 @@ export default function ReportDetailDrawer({
 								{isAttended && report.notes && (
 									<div
 										style={{
-											background: "#e5e3db",
+											background: "var(--cc-hover)",
 											borderRadius: 8,
 											padding: "10px 12px"
 										}}>
@@ -216,7 +216,7 @@ export default function ReportDetailDrawer({
 									</Text>
 									<Text size="sm">{report.survey.description}</Text>
 								</div>
-								<Divider color="#e5e3db" />
+								<Divider color="var(--cc-border)" />
 								<Group justify="space-between">
 									<Text size="sm" fw={500}>
 										Debris present
@@ -228,14 +228,14 @@ export default function ReportDetailDrawer({
 										{report.survey.debrisPresent ? "Yes" : "No"}
 									</Badge>
 								</Group>
-								<Divider color="#e5e3db" />
+								<Divider color="var(--cc-border)" />
 								<Group justify="space-between">
 									<Text size="sm" fw={500}>
 										Damage level
 									</Text>
 									<Text size="sm">{report.survey.damageLevel}</Text>
 								</Group>
-								<Divider color="#e5e3db" />
+								<Divider color="var(--cc-border)" />
 								<Group justify="space-between">
 									<Text size="sm" fw={500}>
 										Affected people
@@ -282,7 +282,7 @@ export default function ReportDetailDrawer({
 				<div
 					style={{
 						padding: "12px 16px",
-						background: "#f0eee6",
+						background: "var(--cc-panel)",
 						borderTop: "1px solid #e5e3db",
 						position: "sticky",
 						bottom: 0
@@ -291,7 +291,7 @@ export default function ReportDetailDrawer({
 						<Button
 							leftSection={<IconNavigation size={16} />}
 							variant="outline"
-							color="dark"
+							color="gold"
 							radius="xl"
 							style={{ flex: 1 }}
 							onClick={() => {
@@ -303,7 +303,7 @@ export default function ReportDetailDrawer({
 						{!isAttended && (
 							<Button
 								leftSection={<IconCircleCheck size={16} />}
-								color="dark"
+								color="gold"
 								radius="xl"
 								style={{ flex: 1 }}
 								onClick={() => setAttendModalOpen(true)}>
@@ -321,7 +321,7 @@ export default function ReportDetailDrawer({
 				title="Mark as Attended"
 				centered
 				radius="md"
-				styles={{ content: { background: "#f0eee6" } }}>
+				styles={{ content: { background: "var(--cc-panel)" } }}>
 				<Stack gap={16}>
 					<Text size="sm" c="dimmed">
 						Add any notes about the situation before marking this report as
@@ -334,17 +334,17 @@ export default function ReportDetailDrawer({
 						value={notes}
 						onChange={e => setNotes(e.currentTarget.value)}
 						styles={{
-							input: { background: "white", borderColor: "#e5e3db" }
+							input: { background: "var(--cc-panel)", borderColor: "var(--cc-border)", color: "var(--cc-text)" }
 						}}
 					/>
 					<Group justify="flex-end" gap={8}>
 						<Button
 							variant="subtle"
-							color="dark"
+							color="gold"
 							onClick={() => setAttendModalOpen(false)}>
 							Cancel
 						</Button>
-						<Button color="dark" radius="xl" onClick={handleMarkAttended}>
+						<Button color="gold" radius="xl" onClick={handleMarkAttended}>
 							Confirm
 						</Button>
 					</Group>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
 	Text,
@@ -22,14 +22,14 @@ import {
 	IconAlertTriangle
 } from "@tabler/icons-react";
 import { useAuth } from "@/context/AuthContext";
-import { mockReports } from "@/data/mockData";
-import BottomNav from "@/components/BottomNav";
+import { CrisisReport } from "@/types";
+import TopNav from "@/components/TopNav";
 
 function StatCard({
 	icon: Icon,
 	label,
 	value,
-	color = "#1a1a1a"
+	color = "var(--cc-accent)"
 }: {
 	icon: React.ComponentType<{ size: number; color: string }>;
 	label: string;
@@ -39,12 +39,12 @@ function StatCard({
 	return (
 		<div
 			style={{
-				background: "white",
+				background: "var(--cc-panel)",
 				borderRadius: 12,
 				padding: "16px 12px",
 				flex: 1,
 				textAlign: "center",
-				border: "1px solid #e5e3db"
+				border: "1px solid var(--cc-border)"
 			}}>
 			<Icon size={20} color={color} />
 			<Text fw={700} size="xl" mt={6} mb={2} style={{ color }}>
@@ -67,8 +67,8 @@ function InfoRow({
 	value: string;
 }) {
 	return (
-		<Group gap={12} py={12} style={{ borderBottom: "1px solid #e5e3db" }}>
-			<Icon size={18} color="#6b7280" />
+		<Group gap={12} py={12} style={{ borderBottom: "1px solid var(--cc-border)" }}>
+			<Icon size={18} color="var(--cc-text-muted)" />
 			<div>
 				<Text size="xs" c="dimmed" mb={1}>
 					{label}
@@ -84,10 +84,19 @@ function InfoRow({
 export default function ProfilePage() {
 	const { responder, isLoading, logout } = useAuth();
 	const router = useRouter();
+	const [reports, setReports] = useState<CrisisReport[]>([]);
 
 	useEffect(() => {
 		if (!isLoading && !responder) router.replace("/login");
 	}, [responder, isLoading, router]);
+
+	useEffect(() => {
+		if (!responder) return;
+		fetch("/api/reports")
+			.then(res => res.json())
+			.then(setReports)
+			.catch(err => console.error("Failed to load reports:", err));
+	}, [responder]);
 
 	if (isLoading || !responder) {
 		return (
@@ -97,15 +106,15 @@ export default function ProfilePage() {
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "center",
-					background: "#f0eee6"
+					background: "var(--cc-bg)"
 				}}>
-				<Loader color="dark" />
+				<Loader color="gold" />
 			</div>
 		);
 	}
 
-	const activeReports = mockReports.filter(r => r.status === "assigned").length;
-	const attendedReports = mockReports.filter(
+	const activeReports = reports.filter(r => r.status === "assigned").length;
+	const attendedReports = reports.filter(
 		r => r.status === "attended"
 	).length;
 
@@ -113,16 +122,19 @@ export default function ProfilePage() {
 		<div
 			style={{
 				minHeight: "100dvh",
-				background: "#f0eee6",
-				paddingBottom: 80
+				background: "var(--cc-bg)",
+				paddingTop: 64,
+				paddingBottom: 24
 			}}>
+			<TopNav />
+
 			{/* Header */}
 			<div
 				style={{
 					padding: "24px 16px 20px",
-					borderBottom: "1px solid #e5e3db"
+					borderBottom: "1px solid var(--cc-border)"
 				}}>
-				<Text fw={700} size="lg" mb={20}>
+				<Text fw={700} size="lg" mb={20} style={{ fontFamily: "'Big Shoulders Display', sans-serif" }}>
 					Profile
 				</Text>
 
@@ -133,13 +145,13 @@ export default function ProfilePage() {
 							width: 64,
 							height: 64,
 							borderRadius: "50%",
-							background: "#1a1a1a",
+							background: "var(--cc-accent)",
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
 							flexShrink: 0
 						}}>
-						<IconShieldHalf size={28} color="white" />
+						<IconShieldHalf size={28} color="#151515" />
 					</div>
 					<div>
 						<Text fw={700} size="lg" lh={1.2}>
@@ -147,7 +159,7 @@ export default function ProfilePage() {
 						</Text>
 						<Group gap={6} mt={4}>
 							<Badge
-								color="dark"
+								color="gold"
 								variant="filled"
 								size="xs"
 								leftSection={<IconBadge size={10} />}>
@@ -185,7 +197,7 @@ export default function ProfilePage() {
 				{/* Info */}
 				<div
 					style={{
-						background: "#f0eee6",
+						background: "var(--cc-panel)",
 						borderRadius: 12,
 						padding: "0 4px"
 					}}>
@@ -198,7 +210,7 @@ export default function ProfilePage() {
 
 				<div
 					style={{
-						background: "#f0eee6",
+						background: "var(--cc-panel)",
 						borderRadius: 12,
 						padding: "0 4px",
 						marginTop: 16
@@ -218,7 +230,7 @@ export default function ProfilePage() {
 				<Button
 					fullWidth
 					variant="outline"
-					color="dark"
+					color="gold"
 					radius="xl"
 					leftSection={<IconLogout size={16} />}
 					mt={24}
@@ -226,8 +238,6 @@ export default function ProfilePage() {
 					Sign Out
 				</Button>
 			</div>
-
-			<BottomNav />
 		</div>
 	);
 }

@@ -1,25 +1,26 @@
 import { useRouter } from "next/router";
-import { IconMap2, IconList, IconUser } from "@tabler/icons-react";
+import { IconMap2, IconList, IconUser, IconRoute } from "@tabler/icons-react";
 
 const NAV_ITEMS = [
 	{ label: "Map", icon: IconMap2, href: "/map" },
 	{ label: "Reports", icon: IconList, href: "/reports" },
+	{ label: "Route", icon: IconRoute, href: "/route" },
 	{ label: "Profile", icon: IconUser, href: "/profile" }
 ];
 
-export default function BottomNav() {
+export default function TopNav() {
 	const router = useRouter();
 
 	return (
 		<nav
 			style={{
 				position: "fixed",
-				bottom: 0,
+				top: 0,
 				left: 0,
 				right: 0,
 				height: 64,
-				background: "#ffffff",
-				borderTop: "1px solid #e5e3db",
+				background: "var(--cc-panel)",
+				borderBottom: "1px solid var(--cc-border)",
 				display: "flex",
 				alignItems: "stretch",
 				zIndex: 1000
@@ -39,12 +40,13 @@ export default function BottomNav() {
 							gap: 4,
 							background: "none",
 							border: "none",
+							borderBottom: active ? "2.5px solid var(--cc-accent)" : "2.5px solid transparent",
 							cursor: "pointer",
-							color: active ? "#1a1a1a" : "#9ca3af",
-							fontFamily: "DMSans",
+							color: active ? "var(--cc-accent)" : "var(--cc-text-muted)",
+							fontFamily: "'Public Sans', sans-serif",
 							fontSize: 11,
 							fontWeight: active ? 600 : 400,
-							transition: "color 0.15s"
+							transition: "color 0.15s, border-color 0.15s"
 						}}>
 						<Icon size={22} stroke={active ? 2 : 1.5} />
 						{label}
