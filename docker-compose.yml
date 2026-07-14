@@ -54,6 +54,28 @@ services:
       retries: 3
       start_period: 60s
 
+  # ── Faraja: the hosted-AI brain (reporters assistant + responder co-pilot) ──
+  faraja:
+    build:
+      context: ./faraja
+      dockerfile: Dockerfile
+    container_name: undp-faraja
+    ports:
+      - "8088:8088"
+    environment:
+      LLM_PROVIDERS: ${LLM_PROVIDERS:-gemini,groq}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      APP_ENV: production
+      CORS_ORIGINS: ${FARAJA_CORS_ORIGINS:-*}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   reporters-app:
     build:
       context: ./reporters-app
@@ -62,11 +84,14 @@ services:
     ports:
       - "3000:3000"
     environment:
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       QUEUE_SERVICE_URL: http://undp-queue:5000
       CLASSIFIER_URL: http://undp-classifier:6000
+      # reporters ChatBot -> /api/chat (server-side) -> Faraja
+      FARAJA_URL: http://undp-faraja:8088
     depends_on:
       queue:
+        condition: service_healthy
+      faraja:
         condition: service_healthy
     restart: unless-stopped
 
